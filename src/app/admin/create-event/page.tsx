@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, signupSchema } from "@/schemas";
+import { createEventSchema, loginSchema, signupSchema } from "@/schemas";
 import { number } from "zod/v4";
 import ActivityIndicator from "@/components/ActivityIndicator";
 import { useLoginUser, useRegisterUser } from "@/queries/auth.queries";
@@ -20,8 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useEvents } from "@/queries/event.queries";
+import { useUser } from "@/queries/user.queries";
 
-const SignUp: React.FC = () => {
+const CreateEvent: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showReenterPassword, setShowReenterPassword] = useState(false);
 
@@ -38,14 +40,15 @@ const SignUp: React.FC = () => {
     handleSubmit,
     control,
     formState: error,
-  } = useForm({ resolver: zodResolver(signupSchema) });
+  } = useForm({ resolver: zodResolver(createEventSchema) });
 
-  // Handle form submission
-  const onSubmit: SubmitHandler<any> = (data) => {
-    console.log(data);
-    mutate(data);
-    // error && console.error(error);
-  };
+  const {
+    data: userData,
+    isSuccess: isUserSuccess,
+    isPending: isuUserPending,
+    error: userError,
+    isError: isUserError,
+  } = useUser();
 
   const {
     data,
@@ -53,12 +56,12 @@ const SignUp: React.FC = () => {
     isSuccess,
     isPending,
     isError,
-    error: LoginError,
-  } = useRegisterUser();
+    error: createEventError,
+  } = useEvents();
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("Welcome onBoard!😊", {
+      toast.success("Event Created Successfully🎉🎊", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -67,10 +70,10 @@ const SignUp: React.FC = () => {
         draggable: true,
         progress: undefined,
       });
-      router.push("login");
+      router.push("home");
     }
     if (isError) {
-      toast.error(`Error trying to Sign up :${LoginError}`, {
+      toast.error(`Error trying to createEvent :${createEventError}`, {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -80,7 +83,16 @@ const SignUp: React.FC = () => {
         progress: undefined,
       });
     }
-  }, [isSuccess, isPending, LoginError, isError]);
+  }, [isSuccess, isPending, createEventError, isError]);
+
+  // Handle form submission
+  const onSubmit: SubmitHandler<any> = (data) => {
+    console.log(data);
+    if (isUserSuccess) {
+      mutate({ ...data, createdBy: userData.walletId });
+    }
+    // error && console.error(error);
+  };
 
   return (
     <div className="min-h-screen bg-white p-6 flex flex-col ">
@@ -88,7 +100,7 @@ const SignUp: React.FC = () => {
       <div className="flex-1 pt-8">
         <div className="relative mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Signup and start transferring
+            Create Event and start receiving funds
           </h1>
           <div className="absolute -top-4 right-0">
             <div className="w-8 h-8 bg-yellow-400 rounded transform rotate-45 relative">
@@ -100,140 +112,71 @@ const SignUp: React.FC = () => {
           </div>
         </div>
 
-        {/* Social Login Buttons */}
-        <div className="grid grid-cols-2 gap-3 mb-8">
-          <Button variant="outline" className="h-12 text-gray-700">
-            Google
-          </Button>
-          <Button variant="outline" className="h-12 text-gray-700">
-            Facebook
-          </Button>
-        </div>
-
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              First Name
+              Event Name
             </label>
             <Input
               type="text"
-              placeholder="Enter your first name"
+              placeholder="Enter your event title"
               className="h-12"
-              {...register("firstName")}
+              {...register("eventName")}
             />
             {error && (
               <p className="text-xs sm:text-sm font-Supreme text-red-500 leading-tight sm:leading-normal mt-2">
-                {error.errors.firstName?.message}
+                {error.errors.eventName?.message}
               </p>
             )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Last Name
+              Description
             </label>
             <Input
               type="text"
-              placeholder="Enter your last name"
+              placeholder="Enter description"
               className="h-12"
-              {...register("lastName")}
+              {...register("description")}
             />
             {error && (
               <p className="text-xs sm:text-sm font-Supreme text-red-500 leading-tight sm:leading-normal mt-2">
-                {error.errors.lastName?.message}
+                {error.errors.description?.message}
               </p>
             )}
           </div>
+          {/* <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Created By
+            </label>
+            <Input
+              type="text"
+              placeholder="Please enter your ID (You can find it on your dashboard)"
+              className="h-12"
+              {...register("createdBy")}
+            />
+            {error && (
+              <p className="text-xs sm:text-sm font-Supreme text-red-500 leading-tight sm:leading-normal mt-2">
+                {error.errors.createdBy?.message}
+              </p>
+            )}
+          </div> */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Matric Number
+              Target Amount
             </label>
             <Input
               type="number"
-              placeholder="Enter your matric number"
+              placeholder="Enter your Target amount"
               className="h-12"
-              {...register("matricNumber", { valueAsNumber: true })}
+              {...register("targetAmount", { valueAsNumber: true })}
             />
             {error && (
               <p className="text-xs sm:text-sm font-Supreme text-red-500 leading-tight sm:leading-normal mt-2">
-                {error.errors.matricNumber?.message}
+                {error.errors.targetAmount?.message}
               </p>
             )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              className="h-12"
-              {...register("email")}
-            />
-            {error && (
-              <p className="text-xs sm:text-sm font-Supreme text-red-500 leading-tight sm:leading-normal mt-2">
-                {error.errors.email?.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                className="h-12 pr-12"
-                {...register("password")}
-              />
-              {error && (
-                <p className="text-xs sm:text-sm font-Supreme text-red-500 leading-tight sm:leading-normal mt-2">
-                  {error.errors.password?.message}
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              User Role
-            </label>
-            <div className="relative">
-              <Controller
-                control={control}
-                name="userRole"
-                rules={{ required: "User role is required" }}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className="w-full h-12">
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Select Role</SelectLabel>
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-
-              {error.errors.userRole && (
-                <p className="text-red-500 text-sm">
-                  {error.errors.userRole.message}
-                </p>
-              )}
-            </div>
           </div>
         </form>
       </div>
@@ -246,16 +189,11 @@ const SignUp: React.FC = () => {
           onClick={handleSubmit(onSubmit)}
           className="w-full h-12 bg-blue-500 hover:bg-blue-600"
         >
-          {isPending ? <ActivityIndicator /> : "Create account"}
+          {isPending ? <ActivityIndicator /> : "Create Event"}
         </Button>
-        <div className="text-center">
-          <button onClick={handleRoute} className="text-blue-500 text-sm">
-            Already have account?
-          </button>
-        </div>
       </div>
     </div>
   );
 };
 
-export default SignUp;
+export default CreateEvent;

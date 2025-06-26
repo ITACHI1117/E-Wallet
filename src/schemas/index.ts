@@ -24,8 +24,26 @@ export const signupSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .nonempty("Password is required"),
-  //   confirmPassword: z
-  //     .string()
-  //     .min(6, "Confirm password must be at least 6 characters")
-  //     .nonempty("Confirm password is required"),
+  userRole: z.string().refine((val) => val === "student" || val === "admin", {
+    message: "Role must be either 'student' or 'admin'",
+  }),
+});
+
+// fund wallet Schema
+export const fundWalletSchema = z.object({
+  walletBalance: z.number().min(1000, "You have to fund more than 1000 "),
+});
+
+// create event schema
+export const createEventSchema = z.object({
+  eventName: z
+    .string()
+    .min(1, "First name is required")
+    .max(50, "Event Title must be less than 50 characters"),
+  description: z
+    .string()
+    .min(1, "Last name is required")
+    .max(50, "Description must be less than 50 characters"),
+  targetAmount: z.number(),
+  // createdBy: z.string(),
 });

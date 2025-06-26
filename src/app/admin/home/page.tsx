@@ -2,6 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { logoutUser } from "@/firebase/auth";
+import { useGetEvents } from "@/queries/event.queries";
 import { useUser } from "@/queries/user.queries";
 import {
   ArrowUpDown,
@@ -15,55 +16,25 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
-const transactions: Transaction[] = [
-  {
-    id: "1",
-    name: "Yara Khalil",
-    avatar: "/api/placeholder/40/40",
-    amount: -15.0,
-    time: "Oct 14, 10:24 AM",
-    type: "sent",
-  },
-  {
-    id: "2",
-    name: "Sara Ibrahim",
-    avatar: "/api/placeholder/40/40",
-    amount: 20.5,
-    time: "Oct 12, 02:15 PM",
-    type: "received",
-  },
-  {
-    id: "3",
-    name: "Ahmad Ibrahim",
-    avatar: "/api/placeholder/40/40",
-    amount: 12.4,
-    time: "Oct 11, 01:18 AM",
-    type: "received",
-  },
-  {
-    id: "4",
-    name: "Reem Khaled",
-    avatar: "/api/placeholder/40/40",
-    amount: -21.3,
-    time: "Oct 07, 03:10 PM",
-    type: "sent",
-  },
-  {
-    id: "5",
-    name: "Hiba Saleh",
-    avatar: "/api/placeholder/40/40",
-    amount: 209.0,
-    time: "Oct 04, 08:43 AM",
-    type: "received",
-  },
-];
+
 const DashboardPage: React.FC = () => {
   const router = useRouter();
 
   const { data, isSuccess, isPending, isError, error } = useUser();
 
+  const {
+    mutate,
+    data: myEvents,
+    isSuccess: isGetEventSuccess,
+    isPending: isGetEventPending,
+    error: getEventError,
+  } = useGetEvents();
+
   useEffect(() => {
-    isSuccess && console.log(data);
+    if (isSuccess) {
+      console.log(data);
+      mutate(data.walletId);
+    }
     if (isError) {
       toast.error(
         `There was an error while trying to retrieve your information`,
@@ -136,7 +107,7 @@ const DashboardPage: React.FC = () => {
         `}</style>
 
         {/* Header Section */}
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 px-6 pt-12 pb-8">
+        <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 px-6 pt-12 pb-8">
           {/* Header Title and Icons */}
           <div className="flex justify-between items-start mb-6">
             <div className="h-6 w-24 bg-white/20 rounded skeleton-wave skeleton-wave-blue"></div>
@@ -155,8 +126,8 @@ const DashboardPage: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="h-12 w-full bg-yellow-400/30 rounded-lg skeleton-wave skeleton-wave-blue"></div>
             <div className="h-12 w-full bg-blue-400/30 rounded-lg skeleton-wave skeleton-wave-blue"></div>
+            <div className="h-12 w-full bg-yellow-400/30 rounded-lg skeleton-wave skeleton-wave-blue"></div>
           </div>
         </div>
 
@@ -218,9 +189,9 @@ const DashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header Section */}
-      <div className="bg-gradient-to-br from-blue-500 to-blue-600 px-6 pt-12 pb-8 text-white">
+      <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 px-6 pt-12 pb-8 text-white">
         <div className="flex justify-between items-start mb-6">
-          <h1 className="text-xl font-semibold">Dashboard</h1>
+          <h1 className="text-xl font-semibold">Admin Dashboard</h1>
           <div className="flex items-center space-x-4">
             <Bell size={20} className="text-white" />
             <Avatar
@@ -244,15 +215,15 @@ const DashboardPage: React.FC = () => {
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3">
           <Button
-            onClick={() => router.push("send-money")}
-            className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 h-12 font-semibold shadow-lg"
+            onClick={() => router.push("create-event")}
+            className="bg-blue-400 hover:bg-blue-500 text-gray-900 h-12 font-semibold shadow-lg"
           >
             <Send size={16} className="mr-2" />
-            Send Money
+            Create Event
           </Button>
           <Button
             onClick={() => router.push("add-card")}
-            className="bg-blue-400 hover:bg-blue-500 text-white h-12 font-semibold shadow-lg"
+            className="bg-yellow-400 hover:bg-yellow-500 text-white h-12 font-semibold shadow-lg"
           >
             <Download size={16} className="mr-2" />
             Fund Wallet
@@ -264,47 +235,36 @@ const DashboardPage: React.FC = () => {
       <div className="bg-white rounded-t-3xl -mt-4 pt-6 pb-20 flex-1">
         <div className="px-6">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Last Transactions
-            </h3>
-            <button
-              onClick={() => router.push("transactions")}
-              className="text-blue-500 text-sm font-medium hover:text-blue-600"
-            >
-              View All
-            </button>
+            <h3 className="text-lg font-semibold text-gray-900">All Events</h3>
           </div>
 
           <div className="space-y-4">
-            {data?.transactions.length > 0 ? (
-              data?.transactions.map((transaction) => (
+            {myEvents && myEvents?.length > 0 ? (
+              myEvents?.map((event) => (
                 <div
-                  key={transaction.id}
+                  key={event.createdAt}
                   className="flex items-center justify-between py-2"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="relative">
                       <Avatar className="w-12 h-12">
-                        <AvatarImage
-                          src={transaction.avatar}
-                          alt={transaction.name}
-                        />
+                        <AvatarImage src={event.avatar} alt={event.eventName} />
                         <AvatarFallback className="bg-gray-200 text-gray-600 text-sm font-medium">
-                          {transaction.name
+                          {event.eventName
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
-                      {/* Transaction type indicator */}
+                      {/* event type indicator */}
                       <div
                         className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center ${
-                          transaction.type === "sent"
+                          event.type === "sent"
                             ? "bg-orange-400"
                             : "bg-green-400"
                         }`}
                       >
-                        {transaction.type === "sent" ? (
+                        {event.type === "sent" ? (
                           <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[4px] border-b-white"></div>
                         ) : (
                           <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white"></div>
@@ -313,23 +273,23 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900 text-sm">
-                        {transaction.name}
+                        {event.eventName}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {transaction.time}
+                        {event.description}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p
                       className={`font-semibold text-sm ${
-                        transaction.amount > 0
+                        event.totalAmountReceived > 0
                           ? "text-green-500"
                           : "text-gray-900"
                       }`}
                     >
-                      {transaction.amount > 0 ? "+" : ""}$
-                      {Math.abs(transaction.amount).toFixed(2)}
+                      {event.totalAmountReceived > 0 ? "+" : ""}$
+                      {Math.abs(event.totalAmountReceived).toFixed(2)}
                     </p>
                   </div>
                 </div>

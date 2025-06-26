@@ -27,3 +27,21 @@ interface BottomTabNavigatorProps {
   tabs: TabItem[];
   className?: string;
 }
+
+// This interface is for creating events
+export interface createGroupPaymentProps {
+  eventName: string;
+  description: string;
+  createdBy: string; // admin UID
+  targetAmount?: number;
+}
+
+export interface getEventsByUserIDProps {
+  eventName: string;
+  description: string;
+  createdBy: string; // admin UID
+  targetAmount?: number;
+  status: string;
+  totalAmountReceived: number;
+  createdAt: Date;
+}

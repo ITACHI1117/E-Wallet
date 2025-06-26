@@ -1,9 +1,17 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Router } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { fundWalletSchema } from "@/schemas";
+import { useFundWallet } from "@/queries/wallet.queries";
+import { useUser } from "@/queries/user.queries";
+import ActivityIndicator from "@/components/ActivityIndicator";
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AddCardProps {
   onBack?: () => void;
@@ -18,11 +26,7 @@ interface CardFormData {
   expiryDate: string;
 }
 
-const AddCard: React.FC<AddCardProps> = ({
-  onBack,
-  onSubmit,
-  className = "",
-}) => {
+const AddCard: React.FC<AddCardProps> = ({ onBack, className = "" }) => {
   const router = useRouter();
   const [formData, setFormData] = useState<CardFormData>({
     cardholderName: "",
@@ -77,12 +81,19 @@ const AddCard: React.FC<AddCardProps> = ({
     }
   };
 
-  const handleSubmit = () => {
-    if (onSubmit) {
-      onSubmit(formData);
-    }
-    console.log("Card Data:", formData);
-  };
+  const {
+    mutate,
+    isSuccess,
+    isError,
+    isPending,
+    error: fundWalletError,
+  } = useFundWallet();
+  const {
+    data: userData,
+    isSuccess: isUser,
+    isError: isUserError,
+    isPending: isUserDataPending,
+  } = useUser();
 
   const isFormValid = () => {
     return (
@@ -92,6 +103,75 @@ const AddCard: React.FC<AddCardProps> = ({
       formData.expiryDate.length === 5
     );
   };
+
+  const [amountFunded, setAmountFunded] = useState();
+  const queryClient = useQueryClient();
+
+  const {
+    register,
+    handleSubmit,
+    formState: error,
+  } = useForm({ resolver: zodResolver(fundWalletSchema) });
+
+  // Handle form submission
+  const onSubmit: SubmitHandler<any> = async (data) => {
+    setAmountFunded(data.walletBalance);
+
+    if (isUser) {
+      const fundWalletData = {
+        uid: userData.walletId,
+        newBalance: data.walletBalance,
+      };
+      mutate(fundWalletData);
+    } else {
+      console.log("could not get user");
+    }
+  };
+
+  useEffect(() => {
+    toast.success(
+      `We do not save your card details, so you would have to enter your card information whenever you want fund your wallet`,
+      {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success(`₦${amountFunded} has been funded into your account🎉🎊`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      queryClient.invalidateQueries(["user"]); // Call right before or after navigating
+      router.push("/wallet/home");
+
+      console.log("funded");
+    }
+    if (isError) {
+      toast.error(`There was an error while trying to fund your wallet`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+    isError && console.log(fundWalletError);
+  }, [isSuccess, isError]);
 
   return (
     <div className={`min-h-screen bg-white  flex flex-col ${className}`}>
@@ -103,13 +183,30 @@ const AddCard: React.FC<AddCardProps> = ({
         >
           <ArrowLeft size={20} className="text-gray-700" />
         </button>
-        <h1 className="text-lg font-semibold text-gray-900">Add Card</h1>
+        <h1 className="text-lg font-semibold text-gray-900">Fund Wallet</h1>
         <div className="w-8"></div> {/* Spacer for center alignment */}
       </div>
 
       {/* Form Content */}
-      <div className="fle flex-col p-6">
+      <form className="fle flex-col p-6">
         <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Fund Amount
+            </label>
+            <Input
+              type="number"
+              placeholder={"Enter amount to be funded into your wallet"}
+              className="h-12 border-gray-200 focus:border-gray-300 focus:ring-gray-300"
+              {...register("walletBalance", { valueAsNumber: true })}
+            />
+            {error && (
+              <p className="text-xs sm:text-sm font-Supreme text-red-500 leading-tight sm:leading-normal mt-2">
+                {error.errors.walletBalance?.message}
+              </p>
+            )}
+          </div>
+
           {/* Cardholder Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -174,16 +271,17 @@ const AddCard: React.FC<AddCardProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </form>
 
       {/* Submit Button */}
       <div className="p-6 pt-0">
         <Button
-          onClick={handleSubmit}
-          disabled={!isFormValid()}
+          disabled={isPending || !isFormValid()}
+          onClick={handleSubmit(onSubmit)}
+          // disabled={}
           className="w-full h-12 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium text-base rounded-lg"
         >
-          Submit Card
+          {isPending ? <ActivityIndicator /> : "Fund Wallet"}
         </Button>
       </div>
     </div>

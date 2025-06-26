@@ -1,7 +1,8 @@
 "use client";
+import ActivityIndicator from "@/components/ActivityIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRegisterUser } from "@/queries/auth.queries";
+import { useLoginUser, useRegisterUser } from "@/queries/auth.queries";
 import { loginSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
@@ -33,7 +34,7 @@ const Login: React.FC = () => {
   const onSubmit: SubmitHandler<any> = (data) => {
     console.log(data);
     mutate(data);
-    error && console.error(error);
+    // error && console.error(error);
   };
 
   const {
@@ -43,7 +44,7 @@ const Login: React.FC = () => {
     isPending,
     isError,
     error: LoginError,
-  } = useRegisterUser();
+  } = useLoginUser();
 
   useEffect(() => {
     if (isSuccess) {
@@ -56,8 +57,20 @@ const Login: React.FC = () => {
         draggable: true,
         progress: undefined,
       });
+      router.push("/wallet/home");
     }
-  }, [isSuccess, isPending, error, isError]);
+    if (isError) {
+      toast.error(`Error trying to login :${LoginError}`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  }, [isSuccess, isPending, LoginError, isError]);
 
   return (
     <div className="min-h-screen bg-white p-6 flex flex-col ">
@@ -142,10 +155,11 @@ const Login: React.FC = () => {
       {/* Bottom Section */}
       <div className="mt-8 space-y-4">
         <Button
+          disabled={isPending}
           onClick={handleSubmit(onSubmit)}
           className="w-full h-12 bg-blue-500 hover:bg-blue-600"
         >
-          Login
+          {isPending ? <ActivityIndicator /> : "Login"}
         </Button>
         <div className="text-center">
           <button onClick={handleRoute} className="text-blue-500 text-sm">
