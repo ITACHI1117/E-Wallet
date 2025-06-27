@@ -3,6 +3,15 @@
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    },
+    {
+      "source": "/wallet/send-money/:id",
+      "destination": "/wallet/send-money/[id]"
     }
-  ]
+  ],
+  "functions": {
+    "app/wallet/send-money/[id]/page.tsx": {
+      "maxDuration": 30
+    }
+  }
 }
