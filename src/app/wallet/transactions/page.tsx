@@ -114,7 +114,7 @@ const TransactionsContent = () => {
   };
 
   return (
-    <div className={`bg-white ${className}`}>
+    <div className={`bg-white`}>
       {/* Header */}
       <div className="flex items-center justify-between p-6 pb-4">
         <h1 className="text-xl font-semibold text-gray-900">Transactions</h1>

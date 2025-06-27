@@ -163,7 +163,7 @@ const AddCard = () => {
   }, [isSuccess, isError]);
 
   return (
-    <div className={`min-h-screen bg-white  flex flex-col ${className}`}>
+    <div className={`min-h-screen bg-white  flex flex-col`}>
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-100">
         <button

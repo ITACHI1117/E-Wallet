@@ -4,12 +4,7 @@ import { ArrowUpDown, BanknoteArrowUp, Home, User, Users } from "lucide-react";
 import { useState } from "react";
 
 // Main Layout Component
-const MobileLayout: React.FC<MobileLayoutProps> = ({
-  children,
-  bottomTabs,
-  showBottomTabs = true,
-  className = "",
-}) => {
+const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
   const [activeTab, setActiveTab] = useState("home");
 
   const tabs: TabItem[] = [
