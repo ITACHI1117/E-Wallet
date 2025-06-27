@@ -7,6 +7,7 @@ import { useGetAllEvents } from "@/queries/event.queries";
 import EventList from "@/components/EventList";
 import { useUser } from "@/queries/user.queries";
 import { storeUser } from "@/store/storeUser";
+import { storeSendFunds } from "@/store/storeSendFunds";
 
 // Types
 interface PaymentRequest {
@@ -137,9 +138,13 @@ const NacosPayments = () => {
 
   const handleSendPay = (id, createdBy, price) => {
     const data = storeUser.state;
-    router.push(
-      `send-money/${id}?createdBy=${createdBy}&price=${price}&userId=${data.walletId}`
-    );
+    storeSendFunds.setState({
+      id: id,
+      createdBy: createdBy,
+      price: price,
+      userId: data.walletId,
+    });
+    router.push(`send-money`);
   };
 
   return (
