@@ -5,14 +5,7 @@ import { useEffect } from "react";
 
 const RoleLoadingSpinner = () => {
   const router = useRouter();
-  const {
-    data: userData,
-    isSuccess: useSuccess,
-    isPending: userPending,
-    isError: userIsError,
-    error: userError,
-    refetch,
-  } = useUser();
+  const { data: userData, isSuccess: useSuccess } = useUser();
 
   useEffect(() => {
     if (useSuccess) {

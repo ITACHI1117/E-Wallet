@@ -1,12 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useGetAllEvents } from "@/queries/event.queries";
 import EventList from "@/components/EventList";
-import ActivityIndicator from "@/components/ActivityIndicator";
 import { useUser } from "@/queries/user.queries";
 import { storeUser } from "@/store/storeUser";
 
@@ -33,8 +31,6 @@ interface RequestsProps {
 }
 
 const NacosPayments: React.FC<RequestsProps> = ({
-  onBack,
-  onSendPayment,
   onSendAllPayments,
   className = "",
 }) => {
@@ -102,30 +98,6 @@ const NacosPayments: React.FC<RequestsProps> = ({
     }, 0);
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const handleSendPayment = (requestId: string) => {
-    // Update the request as paid
-    setRequestGroups((prevGroups) =>
-      prevGroups.map((group) => ({
-        ...group,
-        requests: group.requests.map((request) =>
-          request.id === requestId ? { ...request, isPaid: true } : request
-        ),
-      }))
-    );
-
-    if (onSendPayment) {
-      onSendPayment(requestId);
-    }
-  };
-
   const handleSendAllPayments = () => {
     // Mark all requests as paid
     setRequestGroups((prevGroups) =>
@@ -154,13 +126,7 @@ const NacosPayments: React.FC<RequestsProps> = ({
     refetch,
   } = useGetAllEvents();
 
-  const {
-    data: userData,
-    isSuccess: isUserSuccess,
-    isPending: isUserPending,
-    isError: isUserError,
-    error: useError,
-  } = useUser();
+  const { data: userData, isSuccess: isUserSuccess } = useUser();
 
   const totalAmount = calculateTotalAmount();
   const hasUnpaidRequests = totalAmount > 0;
@@ -179,7 +145,7 @@ const NacosPayments: React.FC<RequestsProps> = ({
     getAllEventPending && console.log("...looading");
   }, [refetch, isUserSuccess]);
 
-  const handleSendPay = (id, createdBy, price, userId) => {
+  const handleSendPay = (id, createdBy, price) => {
     router.push(
       `send-money/${id}?createdBy=${createdBy}&price=${price}&userId=${userWalletId.walletId}`
     );

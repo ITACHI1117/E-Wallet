@@ -6,15 +6,7 @@ import { logoutUser } from "@/firebase/auth";
 import { useUser } from "@/queries/user.queries";
 import { storeUser } from "@/store/storeUser";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowUpDown,
-  Bell,
-  Download,
-  Home,
-  Send,
-  User,
-  Users,
-} from "lucide-react";
+import { Bell, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
@@ -180,7 +172,7 @@ const DashboardHeader: React.FC<{
   walletBalance?: number;
   onSendMoney: () => void;
   onFundWallet: () => void;
-}> = ({ firstName, walletBalance, onSendMoney, onFundWallet }) => {
+}> = ({ firstName, walletBalance, onFundWallet }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   return (
@@ -320,7 +312,7 @@ const TransactionsSection: React.FC<{
 // Main Dashboard Component
 const DashboardPage: React.FC = () => {
   const router = useRouter();
-  const { data, isSuccess, isPending, isError, error, refetch } = useUser();
+  const { data, isSuccess, isPending, isError, refetch } = useUser();
 
   // Navigation handlers
   const handleSendMoney = () => router.push("send-money");

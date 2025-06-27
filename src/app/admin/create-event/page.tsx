@@ -1,57 +1,30 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createEventSchema, loginSchema, signupSchema } from "@/schemas";
-import { number } from "zod/v4";
+import { createEventSchema } from "@/schemas";
 import ActivityIndicator from "@/components/ActivityIndicator";
-import { useLoginUser, useRegisterUser } from "@/queries/auth.queries";
 import { toast } from "react-toastify";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { useEvents } from "@/queries/event.queries";
 import { useUser } from "@/queries/user.queries";
 
 const CreateEvent: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showReenterPassword, setShowReenterPassword] = useState(false);
-
   const router = useRouter();
-
-  // Function to handle navigation to login page
-  const handleRoute = () => {
-    router.push("/auth/login");
-  };
 
   // Initialize form with react-hook-form
   const {
     register,
     handleSubmit,
-    control,
     formState: error,
   } = useForm({ resolver: zodResolver(createEventSchema) });
 
-  const {
-    data: userData,
-    isSuccess: isUserSuccess,
-    isPending: isuUserPending,
-    error: userError,
-    isError: isUserError,
-  } = useUser();
+  const { data: userData, isSuccess: isUserSuccess } = useUser();
 
   const {
-    data,
     mutate,
     isSuccess,
     isPending,

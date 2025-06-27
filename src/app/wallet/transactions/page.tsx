@@ -1,8 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Home, ArrowUpDown, Users, User } from "lucide-react";
+import { Search } from "lucide-react";
 
 // Types
 interface Transaction {
@@ -27,10 +26,6 @@ interface TransactionsProps {
 const TransactionsContent: React.FC<TransactionsProps> = ({
   className = "",
 }) => {
-  const [activeTab, setActiveTab] = useState<"incomes" | "expenses">(
-    "expenses"
-  );
-
   const transactionGroups: TransactionGroup[] = [
     {
       month: "October, 2020",

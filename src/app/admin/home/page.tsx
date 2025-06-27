@@ -5,15 +5,7 @@ import { logoutUser } from "@/firebase/auth";
 import { useGetEvents } from "@/queries/event.queries";
 import { useUser } from "@/queries/user.queries";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowUpDown,
-  Bell,
-  Download,
-  Home,
-  Send,
-  User,
-  Users,
-} from "lucide-react";
+import { Bell, Download, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -21,16 +13,10 @@ import { toast } from "react-toastify";
 const DashboardPage: React.FC = () => {
   const router = useRouter();
 
-  const { data, isSuccess, isPending, isError, error } = useUser();
+  const { data, isSuccess, isPending, isError } = useUser();
   const queryClient = useQueryClient();
 
-  const {
-    mutate,
-    data: myEvents,
-    isSuccess: isGetEventSuccess,
-    isPending: isGetEventPending,
-    error: getEventError,
-  } = useGetEvents();
+  const { mutate, data: myEvents } = useGetEvents();
 
   useEffect(() => {
     if (isSuccess) {

@@ -2,8 +2,7 @@
 import ActivityIndicator from "@/components/ActivityIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useLoginUser, useRegisterUser } from "@/queries/auth.queries";
-import { useUser } from "@/queries/user.queries";
+import { useLoginUser } from "@/queries/auth.queries";
 import { loginSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
@@ -18,10 +17,6 @@ const Login: React.FC = () => {
 
   const handleRoute = () => {
     router.push("/auth/signup");
-  };
-  const handleLogin = () => {
-    router.push("/wallet/home");
-    // Here you would typically handle the login logic, such as calling an API
   };
 
   // Initialize form with react-hook-form
@@ -39,7 +34,6 @@ const Login: React.FC = () => {
   };
 
   const {
-    data,
     mutate,
     isSuccess,
     isPending,

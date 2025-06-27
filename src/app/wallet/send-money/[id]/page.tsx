@@ -3,11 +3,9 @@ import React, { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Send } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SuccessModal from "@/components/SuccessModal";
-import { set } from "zod/v4";
 import { useEventPayment } from "@/queries/wallet.queries";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,37 +14,8 @@ import { payEventSchema } from "@/schemas";
 import { useUser } from "@/queries/user.queries";
 import { toast } from "react-toastify";
 
-interface SendMoneyProps {
-  onBack?: () => void;
-  recipient?: {
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-}
-
 const SendMoney = ({ params }: { params: { id: string } }) => {
-  const recipient = {
-    name: "Yara Khalil",
-    email: "yara_khalil@gmail.com",
-  };
-  const [amount, setAmount] = useState("12.50");
-  const [note, setNote] = useState("");
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-
-  const handleSendPayment = () => {
-    setIsSuccessModalOpen(true);
-    console.log("Sending payment:", { amount, note, recipient });
-    // Handle payment logic here
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
 
   const router = useRouter();
 
@@ -98,7 +67,7 @@ const SendMoney = ({ params }: { params: { id: string } }) => {
         progress: undefined,
       });
     }
-  }, [isSuccess, isError]);
+  }, [isSuccess, isError, router]);
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}

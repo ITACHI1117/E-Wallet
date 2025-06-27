@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Router } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,7 +26,7 @@ interface CardFormData {
   expiryDate: string;
 }
 
-const AddCard: React.FC<AddCardProps> = ({ onBack, className = "" }) => {
+const AddCard: React.FC<AddCardProps> = ({ className = "" }) => {
   const router = useRouter();
   const [formData, setFormData] = useState<CardFormData>({
     cardholderName: "",
@@ -88,12 +88,7 @@ const AddCard: React.FC<AddCardProps> = ({ onBack, className = "" }) => {
     isPending,
     error: fundWalletError,
   } = useFundWallet();
-  const {
-    data: userData,
-    isSuccess: isUser,
-    isError: isUserError,
-    isPending: isUserDataPending,
-  } = useUser();
+  const { data: userData, isSuccess: isUser } = useUser();
 
   const isFormValid = () => {
     return (

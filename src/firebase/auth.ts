@@ -6,8 +6,6 @@ import {
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebaseConfig";
 import { getUserData } from "./getUserData";
-import { toast } from "react-toastify";
-import { useRouter } from "next/router";
 
 export interface RegisterUserData {
   firstName: string;
@@ -72,7 +70,7 @@ export const getCurrentUser = async () => {
       console.log("User Firestore data:", userData);
       return userData;
     } catch (error) {
-      throw new Error("User does not exist"); // ✅ React Query handles this via `isError`
+      throw new Error("User does not exist " + error); // ✅ React Query handles this via `isError`
     }
   }
 };

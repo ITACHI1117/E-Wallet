@@ -4,7 +4,7 @@ import {
   registerUser,
   RegisterUserData,
 } from "@/firebase/auth";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 export const useRegisterUser = () => {
   return useMutation({

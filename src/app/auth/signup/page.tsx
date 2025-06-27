@@ -6,10 +6,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, signupSchema } from "@/schemas";
-import { number } from "zod/v4";
+import { signupSchema } from "@/schemas";
 import ActivityIndicator from "@/components/ActivityIndicator";
-import { useLoginUser, useRegisterUser } from "@/queries/auth.queries";
+import { useRegisterUser } from "@/queries/auth.queries";
 import { toast } from "react-toastify";
 import {
   Select,

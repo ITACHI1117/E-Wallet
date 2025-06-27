@@ -28,18 +28,14 @@ const EventList = ({ getAllEventData, handleSendPay }) => {
 
   const [userWalletId, setUserWalletId] = useState();
 
-  const {
-    data: userData,
-    isSuccess: isUserSuccess,
-    isPending: isUserPending,
-    isError: isUserError,
-    error: useError,
-  } = useUser();
+  const { data: userData, isSuccess: isUserSuccess } = useUser();
 
   useEffect(() => {
     console.log("hi");
-    isUserSuccess && console.log(userData);
-    isUserSuccess && setUserWalletId(userData.walletId);
+    if (isUserSuccess) {
+      console.log(userData);
+      setUserWalletId(userData.walletId);
+    }
   }, [isUserSuccess]);
 
   if (!getAllEventData) {

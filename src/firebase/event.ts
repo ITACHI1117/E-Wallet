@@ -8,7 +8,7 @@ import {
   query,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
-import { createGroupPaymentProps, getEventsByUserIDProps } from "@/utils/types";
+import { createGroupPaymentProps } from "@/utils/types";
 
 export const createGroupPayment = async (data: createGroupPaymentProps) => {
   const eventRef = collection(db, "eventPayments");
