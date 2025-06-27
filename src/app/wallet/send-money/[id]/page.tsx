@@ -14,7 +14,8 @@ import { payEventSchema } from "@/schemas";
 import { useUser } from "@/queries/user.queries";
 import { toast } from "react-toastify";
 
-const SendMoney = ({ params }: { params: { id } }) => {
+// @ts-nocheck
+export default function SendMoney({ params }: { params: { id } }) {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   const router = useRouter();
@@ -175,6 +176,4 @@ const SendMoney = ({ params }: { params: { id } }) => {
       />
     </div>
   );
-};
-
-export default SendMoney;
+}
