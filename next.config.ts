@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    appDir: true, // Make sure this is here
+  },
 };
 
 export default nextConfig;

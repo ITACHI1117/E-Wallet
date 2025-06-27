@@ -4,21 +4,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Send } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import SuccessModal from "@/components/SuccessModal";
 import { useEventPayment } from "@/queries/wallet.queries";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ActivityIndicator from "@/components/ActivityIndicator";
 import { payEventSchema } from "@/schemas";
-import { useUser } from "@/queries/user.queries";
 import { toast } from "react-toastify";
 
-// @ts-nocheck
-export default function SendMoney({ params }: { params: { id } }) {
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+// Fix the interface
+interface SendMoneyProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
+export default function SendMoney({ params, searchParams }: SendMoneyProps) {
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const router = useRouter();
+
+  // Safely unwrap params and searchParams
+  const { id } = use(params);
+  const search = use(searchParams);
+
+  // Extract search parameters safely
+  const price = Array.isArray(search.price) ? search.price[0] : search.price;
+  const createdBy = Array.isArray(search.createdBy)
+    ? search.createdBy[0]
+    : search.createdBy;
+  const userId = Array.isArray(search.userId)
+    ? search.userId[0]
+    : search.userId;
 
   const { mutate, isSuccess, isPending, isError, error } = useEventPayment();
 
@@ -26,27 +42,44 @@ export default function SendMoney({ params }: { params: { id } }) {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(payEventSchema) });
+    setValue,
+  } = useForm({
+    resolver: zodResolver(payEventSchema),
+    defaultValues: {
+      eventId: id,
+      amount: price ? parseFloat(price) : 0,
+      narration: "",
+    },
+  });
 
-  const searchParams = useSearchParams();
-  const price = searchParams.get("price");
-  const createdBy = searchParams.get("createdBy");
-  const userId = searchParams.get("userId");
-  const { id } = use(params);
+  // Set form values when params are available
+  useEffect(() => {
+    if (id) setValue("eventId", id);
+    if (price) setValue("amount", parseFloat(price));
+  }, [id, price, setValue]);
 
-  const onSubmit = (data) => {
-    console.log(id, userId, createdBy);
+  const onSubmit = (data: any) => {
+    console.log("Form data:", data);
+    console.log("Params:", { id, userId, createdBy, price });
+
+    // Validate required data
+    if (!id || !userId || !createdBy) {
+      toast.error("Missing required parameters");
+      return;
+    }
+
     mutate({
-      ...data,
       id: id,
-      createdBy: createdBy,
       userId: userId,
+      amount: data.amount || parseFloat(price || "0"),
+      narration: data.narration || "",
+      createdBy: createdBy,
     });
   };
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("Payment successful🎉🎊", {
+      toast.success("Payment successful 🎉🎊", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -57,18 +90,38 @@ export default function SendMoney({ params }: { params: { id } }) {
       });
       router.push("/wallet/home");
     }
+
     if (isError) {
-      toast.error(`Error while trying to make payment`, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      console.error("Payment error:", error);
+      toast.error(
+        `Error while trying to make payment: ${
+          error?.message || "Unknown error"
+        }`,
+        {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        }
+      );
     }
-  }, [isSuccess, isError, router]);
+  }, [isSuccess, isError, error, router]);
+
+  // Show loading state while params are being resolved
+  if (!id || !price || !createdBy || !userId) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading payment details...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
@@ -80,99 +133,108 @@ export default function SendMoney({ params }: { params: { id } }) {
           <ArrowLeft size={20} className="text-gray-700" />
         </button>
         <h1 className="text-lg font-semibold text-gray-900">Send Money</h1>
-        <div className="w-8"></div> {/* Spacer for center alignment */}
+        <div className="w-8"></div>
+      </div>
+
+      {/* Debug Info (remove in production) */}
+      <div className="p-4 bg-gray-50 border-b">
+        <details>
+          <summary className="text-sm text-gray-600 cursor-pointer">
+            Debug Info
+          </summary>
+          <div className="mt-2 text-xs space-y-1">
+            <p>ID: {id}</p>
+            <p>Price: {price}</p>
+            <p>Created By: {createdBy}</p>
+            <p>User ID: {userId}</p>
+          </div>
+        </details>
       </div>
 
       {/* Content */}
-      <div className="flex flex-col p-6">
-        {/* Recipient Section */}
-        {/* <div className="flex items-center space-x-3 mb-8">
-          <Avatar className="w-12 h-12 bg-gray-200">
-            <AvatarImage src={recipient.avatar} alt={recipient.name} />
-            <AvatarFallback className="bg-gray-200 text-gray-600 font-medium">
-              {getInitials(recipient.name)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium text-gray-900">{recipient.name}</p>
-            <p className="text-sm text-gray-500">{recipient.email}</p>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1">
+        <div className="flex-1 p-6">
+          {/* Wallet ID */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Event ID
+            </label>
+            <div className="relative">
+              <Input
+                type="text"
+                value={id}
+                className="h-14 text-lg font-medium border-2 border-blue-400 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                placeholder="Event ID"
+                readOnly
+                {...register("eventId")}
+              />
+              {errors.eventId && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.eventId.message}
+                </p>
+              )}
+            </div>
           </div>
-        </div> */}
 
-        {/* Wallet ID */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Wallet ID
-          </label>
-          <div className="relative">
-            <Input
-              type="text"
-              value={id}
-              className="h-14 text-lg font-medium border-2 border-blue-400 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
-              placeholder="tb3g4-vyu-4hhti-mmhi37-dq"
-              readOnly
-              {...register("eventId")}
+          {/* Payment Amount */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Payment Amount
+            </label>
+            <div className="relative">
+              <Input
+                type="number"
+                value={price}
+                className="h-14 text-lg font-medium border-2 border-yellow-400 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
+                placeholder="0.00"
+                readOnly
+                {...register("amount", { valueAsNumber: true })}
+              />
+              {errors.amount && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.amount.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Payment Note */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Payment Note
+            </label>
+            <Textarea
+              placeholder="Add payment note (optional)"
+              className="min-h-[120px] resize-none border-gray-200 focus:border-gray-300 focus:ring-gray-300 rounded-lg"
+              {...register("narration")}
             />
-            {errors && (
-              <p className="text-red-500 text-sm">{errors.eventId?.message}</p>
+            {errors.narration && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.narration.message}
+              </p>
             )}
           </div>
         </div>
 
-        {/* Payment Amount */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Payment Amount
-          </label>
-
-          <div className="relative">
-            <Input
-              type="number"
-              value={price}
-              className="h-14 text-lg font-medium border-2 border-yellow-400 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
-              // placeholder="0.00"
-              readOnly
-              {...register("amount", { valueAsNumber: true })}
-            />
-            {errors && (
-              <p className="text-red-500 text-sm">{errors.narration?.amount}</p>
-            )}
-          </div>
+        {/* Bottom Button */}
+        <div className="p-6 pt-0">
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="w-full h-14 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold text-base rounded-lg shadow-lg"
+          >
+            <Send size={18} className="mr-2" />
+            {isPending ? <ActivityIndicator /> : `Send ₦${price}`}
+          </Button>
         </div>
+      </form>
 
-        {/* Payment Note */}
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Payment Note
-          </label>
-          <Textarea
-            placeholder="Add payment note"
-            className="min-h-[120px] resize-none border-gray-200 focus:border-gray-300 focus:ring-gray-300 rounded-lg"
-            {...register("narration")}
-          />
-          {errors && (
-            <p className="text-red-500 text-sm">{errors.narration?.message}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Bottom Button */}
-      <div className="p-6 pt-0">
-        <Button
-          onClick={handleSubmit(onSubmit)}
-          disabled={isPending}
-          className="w-full h-14 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold text-base rounded-lg shadow-lg"
-        >
-          <Send size={18} className="mr-2" />
-          {isPending ? <ActivityIndicator /> : "Send Payment"}
-        </Button>
-      </div>
       {/* Success Modal */}
       <SuccessModal
         isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen((prev) => !prev)}
-        title={"Payment Successful"}
-        message={"The amount has been sent successfully"}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title="Payment Successful"
+        message="The amount has been sent successfully"
       />
     </div>
   );
