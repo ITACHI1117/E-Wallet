@@ -6,12 +6,9 @@ import { useRouter } from "next/navigation";
 import { useGetAllEvents } from "@/queries/event.queries";
 import EventList from "@/components/EventList";
 import { useUser } from "@/queries/user.queries";
-// Use proper store hook
-import { toast } from "react-toastify";
-import { useStoreUser } from "@/store/userStore";
+import { storeUser } from "@/store/storeUser";
 
 // Types
-
 interface PaymentRequest {
   id: string;
   name: string;
@@ -80,22 +77,6 @@ const NacosPayments = () => {
     },
   ]);
 
-  const router = useRouter();
-
-  // Use proper store hook
-  const user = useStoreUser();
-
-  const {
-    data: getAllEventData,
-    isSuccess: getAllEventSuccess,
-    isError: getAllEventError,
-    isPending: getAllEventPending,
-    error,
-    refetch,
-  } = useGetAllEvents();
-
-  const { data: userData, isSuccess: isUserSuccess } = useUser();
-
   const calculateTotalAmount = () => {
     return requestGroups.reduce((total, group) => {
       return (
@@ -118,93 +99,51 @@ const NacosPayments = () => {
         })),
       }))
     );
+
+    if (onSendAllPayments) {
+      onSendAllPayments();
+    }
   };
 
-  useEffect(() => {
-    refetch();
-    console.log("User from store:", user);
+  const [userWalletId, setUserWalletId] = useState({});
 
-    if (isUserSuccess && userData) {
-      console.log("User data from API:", userData);
-    }
-
-    if (getAllEventSuccess && getAllEventData) {
-      console.log("Event data:", getAllEventData);
-    }
-
-    if (getAllEventError && error) {
-      console.log("Event error:", error);
-    }
-  }, [
-    refetch,
-    isUserSuccess,
-    user,
-    userData,
-    getAllEventSuccess,
-    getAllEventData,
-    getAllEventError,
+  const {
+    data: getAllEventData,
+    isSuccess: getAllEventSuccess,
+    isError: getAllEventError,
+    isPending: getAllEventPending,
     error,
-  ]);
+    refetch,
+  } = useGetAllEvents();
 
-  // FIXED: Proper navigation with validation
-  const handleSendPay = (id: string, createdBy: string, price: number) => {
-    console.log("handleSendPay called with:", { id, createdBy, price, user });
-
-    // Validate required data
-    if (!id) {
-      toast.error("Event ID is missing");
-      return;
-    }
-
-    if (!createdBy) {
-      toast.error("Creator information is missing");
-      return;
-    }
-
-    if (!price || price <= 0) {
-      toast.error("Invalid price");
-      return;
-    }
-
-    if (!user || !user.walletId) {
-      toast.error("User wallet information not found. Please login again.");
-      return;
-    }
-
-    // Create proper URL with validation
-    const url = `/wallet/send-money/${encodeURIComponent(
-      id
-    )}?createdBy=${encodeURIComponent(
-      createdBy
-    )}&price=${price}&userId=${encodeURIComponent(user.walletId)}`;
-
-    console.log("Navigating to:", url);
-
-    try {
-      router.push(url);
-    } catch (error) {
-      console.error("Navigation error:", error);
-      toast.error("Failed to navigate to payment page");
-    }
-  };
+  const { data: userData, isSuccess: isUserSuccess } = useUser();
 
   const totalAmount = calculateTotalAmount();
   const hasUnpaidRequests = totalAmount > 0;
 
-  // Show loading if user not loaded
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading user data...</p>
-        </div>
-      </div>
+  const router = useRouter();
+
+  useEffect(() => {
+    refetch();
+    console.log("hi");
+    console.log(storeUser.state);
+    isUserSuccess && console.log(userData);
+    isUserSuccess && setUserWalletId(storeUser.state);
+
+    getAllEventSuccess && console.log(getAllEventData);
+    getAllEventError && console.log(error);
+    getAllEventPending && console.log("...looading");
+  }, [refetch, isUserSuccess]);
+
+  const handleSendPay = (id, createdBy, price) => {
+    const data = storeUser.state;
+    router.push(
+      `send-money/${id}?createdBy=${createdBy}&price=${price}&userId=${data.walletId}`
     );
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className={`min-h-screen bg-white flex flex-col `}>
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-100">
         <button
@@ -214,17 +153,7 @@ const NacosPayments = () => {
           <ArrowLeft size={20} className="text-gray-700" />
         </button>
         <h1 className="text-lg font-semibold text-gray-900">NACOS Payments</h1>
-        <div className="w-8"></div>
-      </div>
-
-      {/* Debug Info (remove in production) */}
-      <div className="mx-6 mt-2 p-3 bg-gray-50 rounded text-xs">
-        <p>
-          <strong>User Wallet ID:</strong> {user?.walletId || "Not found"}
-        </p>
-        <p>
-          <strong>User ID:</strong> {user?.id || "Not found"}
-        </p>
+        <div className="w-8"></div> {/* Spacer for center alignment */}
       </div>
 
       {/* Total Amount Banner */}
@@ -238,21 +167,14 @@ const NacosPayments = () => {
       </div>
 
       {/* Requests List */}
-      <div className="flex flex-col px-6 pb-24">
-        {getAllEventSuccess && getAllEventData ? (
+      <div className="flex flex-col  px-6 pb-24">
+        {getAllEventSuccess ? (
           <EventList
             getAllEventData={getAllEventData}
             handleSendPay={handleSendPay}
           />
-        ) : getAllEventPending ? (
-          <div className="text-center py-8">
-            <div className="w-6 h-6 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
-            <p className="text-gray-600">Loading events...</p>
-          </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-600">No events found</p>
-          </div>
+          <h1>Loading</h1>
         )}
       </div>
 
@@ -273,22 +195,3 @@ const NacosPayments = () => {
 };
 
 export default NacosPayments;
-
-// // Alternative handleSendPay using URLSearchParams for complex URLs
-// const handleSendPayAlternative = (id: string, createdBy: string, price: number) => {
-//   if (!user?.walletId) {
-//     toast.error("User not found");
-//     return;
-//   }
-
-//   const searchParams = new URLSearchParams({
-//     createdBy: createdBy,
-//     price: price.toString(),
-//     userId: user.walletId
-//   });
-
-//   const url = `/wallet/send-money/${encodeURIComponent(id)}?${searchParams.toString()}`;
-
-//   console.log("Navigating to:", url);
-//   router.push(url);
-// };

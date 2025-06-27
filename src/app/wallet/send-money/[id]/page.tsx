@@ -137,7 +137,7 @@ export default function SendMoney({ params, searchParams }: SendMoneyProps) {
       </div>
 
       {/* Debug Info (remove in production) */}
-      <div className="p-4 bg-gray-50 border-b">
+      {/* <div className="p-4 bg-gray-50 border-b">
         <details>
           <summary className="text-sm text-gray-600 cursor-pointer">
             Debug Info
@@ -149,7 +149,7 @@ export default function SendMoney({ params, searchParams }: SendMoneyProps) {
             <p>User ID: {userId}</p>
           </div>
         </details>
-      </div>
+      </div> */}
 
       {/* Content */}
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1">
