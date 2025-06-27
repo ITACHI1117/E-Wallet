@@ -13,12 +13,6 @@ import ActivityIndicator from "@/components/ActivityIndicator";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 
-interface AddCardProps {
-  onBack?: () => void;
-  onSubmit?: (cardData: CardFormData) => void;
-  className?: string;
-}
-
 interface CardFormData {
   cardholderName: string;
   cardNumber: string;
@@ -26,7 +20,7 @@ interface CardFormData {
   expiryDate: string;
 }
 
-const AddCard: React.FC<AddCardProps> = ({ className = "" }) => {
+const AddCard = () => {
   const router = useRouter();
   const [formData, setFormData] = useState<CardFormData>({
     cardholderName: "",

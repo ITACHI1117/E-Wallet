@@ -14,7 +14,7 @@ import { payEventSchema } from "@/schemas";
 import { useUser } from "@/queries/user.queries";
 import { toast } from "react-toastify";
 
-const SendMoney = ({ params }: { params: { id: string } }) => {
+const SendMoney = ({ params }: { params: { id } }) => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   const router = useRouter();

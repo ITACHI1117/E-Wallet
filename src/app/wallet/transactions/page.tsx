@@ -23,9 +23,7 @@ interface TransactionsProps {
 }
 
 // Version without bottom navigation for layout integration
-const TransactionsContent: React.FC<TransactionsProps> = ({
-  className = "",
-}) => {
+const TransactionsContent = () => {
   const transactionGroups: TransactionGroup[] = [
     {
       month: "October, 2020",

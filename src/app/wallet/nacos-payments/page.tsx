@@ -23,17 +23,7 @@ interface RequestGroup {
   requests: PaymentRequest[];
 }
 
-interface RequestsProps {
-  onBack?: () => void;
-  onSendPayment?: (requestId: string) => void;
-  onSendAllPayments?: () => void;
-  className?: string;
-}
-
-const NacosPayments: React.FC<RequestsProps> = ({
-  onSendAllPayments,
-  className = "",
-}) => {
+const NacosPayments = () => {
   const [requestGroups, setRequestGroups] = useState<RequestGroup[]>([
     {
       paymentType: "NACOS",
