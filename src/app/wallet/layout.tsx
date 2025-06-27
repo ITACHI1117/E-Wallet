@@ -21,14 +21,14 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       path: "/wallet/home",
       onClick: () => setActiveTab("home"),
     },
-    {
-      id: "transactions",
-      label: "Transactions",
-      icon: <ArrowUpDown size={20} />,
-      isActive: activeTab === "transactions",
-      path: "/wallet/transactions",
-      onClick: () => setActiveTab("transactions"),
-    },
+    // {
+    //   id: "transactions",
+    //   label: "Transactions",
+    //   icon: <ArrowUpDown size={20} />,
+    //   isActive: activeTab === "transactions",
+    //   path: "/wallet/transactions",
+    //   onClick: () => setActiveTab("transactions"),
+    // },
     {
       id: "nacos",
       label: "Nacos Pay",
@@ -37,14 +37,14 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       path: "/wallet/nacos-payments",
       onClick: () => setActiveTab("nacos"),
     },
-    {
-      id: "profile",
-      label: "Profile",
-      icon: <User size={20} />,
-      isActive: activeTab === "profile",
-      path: "/wallet/profile",
-      onClick: () => setActiveTab("profile"),
-    },
+    // {
+    //   id: "profile",
+    //   label: "Profile",
+    //   icon: <User size={20} />,
+    //   isActive: activeTab === "profile",
+    //   path: "/wallet/profile",
+    //   onClick: () => setActiveTab("profile"),
+    // },
   ];
 
   return (

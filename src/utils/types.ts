@@ -34,6 +34,7 @@ export interface createGroupPaymentProps {
   description: string;
   createdBy: string; // admin UID
   targetAmount?: number;
+  amountPerStudent: number;
 }
 
 export interface getEventsByUserIDProps {

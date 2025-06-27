@@ -18,5 +18,6 @@ export const useUser = () => {
         };
       }
     },
+    enabled: true,
   });
 };

@@ -17,6 +17,7 @@ export const createGroupPayment = async (data: createGroupPaymentProps) => {
     eventName: data.eventName,
     description: data.description,
     targetAmount: data.targetAmount,
+    amountPerStudent: data.amountPerStudent,
     createdBy: data.createdBy,
     totalAmountReceived: 0,
     status: "active",
@@ -32,6 +33,18 @@ export const getAdminGroups = async (adminUid) => {
     collection(db, "eventPayments"),
     where("createdBy", "==", adminUid)
   );
+
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+};
+
+// get all events
+export const getAllEvents = async () => {
+  const q = query(collection(db, "eventPayments"));
 
   const snapshot = await getDocs(q);
 

@@ -35,6 +35,7 @@ export const fundWalletSchema = z.object({
 });
 
 // create event schema
+
 export const createEventSchema = z.object({
   eventName: z
     .string()
@@ -45,5 +46,18 @@ export const createEventSchema = z.object({
     .min(1, "Last name is required")
     .max(50, "Description must be less than 50 characters"),
   targetAmount: z.number(),
+  amountPerStudent: z.number(),
+  // createdBy: z.string(),
+});
+
+// pay for event schema
+export const payEventSchema = z.object({
+  eventId: z
+    .string()
+    .min(1, "First name is required")
+    .max(50, "Event Title must be less than 50 characters"),
+  amount: z.number(),
+
+  narration: z.string().min(1, "Last name is required"),
   // createdBy: z.string(),
 });

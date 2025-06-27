@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { logoutUser } from "@/firebase/auth";
 import { useGetEvents } from "@/queries/event.queries";
 import { useUser } from "@/queries/user.queries";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowUpDown,
   Bell,
@@ -14,13 +15,14 @@ import {
   Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 const DashboardPage: React.FC = () => {
   const router = useRouter();
 
   const { data, isSuccess, isPending, isError, error } = useUser();
+  const queryClient = useQueryClient();
 
   const {
     mutate,
@@ -51,6 +53,18 @@ const DashboardPage: React.FC = () => {
       // router.push()
     }
   }, [isSuccess, isError]);
+
+  const [totalReceived, setTotalReceived] = useState(0);
+
+  useEffect(() => {
+    if (myEvents?.length > 0) {
+      const total = myEvents.reduce((sum, event) => {
+        return sum + (event.totalAmountReceived || 0);
+      }, 0);
+
+      setTotalReceived(total);
+    }
+  }, [myEvents]);
 
   if (isError) {
     return (
@@ -196,7 +210,11 @@ const DashboardPage: React.FC = () => {
             <Bell size={20} className="text-white" />
             <Avatar
               className="w-8 h-8 border-2 border-white/20"
-              onClick={logoutUser}
+              onClick={() => {
+                queryClient.clear(); // remove just the user data
+                router.push("/auth/login");
+                logoutUser();
+              }}
             >
               <AvatarImage src="/api/placeholder/32/32" alt="Amanda" />
               <AvatarFallback className="bg-white/20 text-white text-sm">
@@ -209,7 +227,7 @@ const DashboardPage: React.FC = () => {
         <div className="mb-6">
           <p className="text-blue-100 text-sm mb-1">Hi, {data?.firstName}!</p>
           <p className="text-blue-100 text-sm mb-2">Total Balance</p>
-          <h2 className="text-4xl font-bold">₦{data?.walletBalance}</h2>
+          <h2 className="text-4xl font-bold">₦{totalReceived}</h2>
         </div>
 
         {/* Action Buttons */}

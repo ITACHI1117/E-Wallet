@@ -1,9 +1,14 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useGetAllEvents } from "@/queries/event.queries";
+import EventList from "@/components/EventList";
+import ActivityIndicator from "@/components/ActivityIndicator";
+import { useUser } from "@/queries/user.queries";
+import { storeUser } from "@/store/storeUser";
 
 // Types
 interface PaymentRequest {
@@ -138,10 +143,47 @@ const NacosPayments: React.FC<RequestsProps> = ({
     }
   };
 
+  const [userWalletId, setUserWalletId] = useState({});
+
+  const {
+    data: getAllEventData,
+    isSuccess: getAllEventSuccess,
+    isError: getAllEventError,
+    isPending: getAllEventPending,
+    error,
+    refetch,
+  } = useGetAllEvents();
+
+  const {
+    data: userData,
+    isSuccess: isUserSuccess,
+    isPending: isUserPending,
+    isError: isUserError,
+    error: useError,
+  } = useUser();
+
   const totalAmount = calculateTotalAmount();
   const hasUnpaidRequests = totalAmount > 0;
 
   const router = useRouter();
+
+  useEffect(() => {
+    refetch();
+    console.log("hi");
+    console.log(storeUser.state);
+    isUserSuccess && console.log(userData);
+    isUserSuccess && setUserWalletId(storeUser.state);
+
+    getAllEventSuccess && console.log(getAllEventData);
+    getAllEventError && console.log(error);
+    getAllEventPending && console.log("...looading");
+  }, [refetch, isUserSuccess]);
+
+  const handleSendPay = (id, createdBy, price, userId) => {
+    router.push(
+      `send-money/${id}?createdBy=${createdBy}&price=${price}&userId=${userWalletId.walletId}`
+    );
+  };
 
   return (
     <div className={`min-h-screen bg-white flex flex-col ${className}`}>
@@ -169,56 +211,14 @@ const NacosPayments: React.FC<RequestsProps> = ({
 
       {/* Requests List */}
       <div className="flex flex-col  px-6 pb-24">
-        {requestGroups.map((group, groupIndex) => (
-          <div key={groupIndex} className="mb-6">
-            {/* Month Header */}
-            <h2 className="text-sm font-medium text-gray-500 mb-4">
-              {group.paymentType}
-            </h2>
-
-            {/* Requests */}
-            <div className="space-y-3">
-              {group.requests.map((request) => (
-                <div
-                  key={request.id}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={request.avatar} alt={request.name} />
-                      <AvatarFallback className="bg-gray-200 text-gray-600 text-sm font-medium">
-                        {getInitials(request.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-gray-900 text-sm">
-                        {request.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        ₦{request.amount.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    {request.isPaid ? (
-                      <div className="px-4 py-2 bg-green-100 text-green-700 text-xs font-medium rounded-lg">
-                        Paid
-                      </div>
-                    ) : (
-                      <Button
-                        onClick={() => handleSendPayment(request.id)}
-                        className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 h-8 text-xs font-medium"
-                      >
-                        <Send size={12} className="mr-1" />
-                        Send
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+        {getAllEventSuccess ? (
+          <EventList
+            getAllEventData={getAllEventData}
+            handleSendPay={handleSendPay}
+          />
+        ) : (
+          <h1>Loading</h1>
+        )}
       </div>
 
       {/* Send All Payment Button */}

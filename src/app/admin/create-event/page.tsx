@@ -178,6 +178,22 @@ const CreateEvent: React.FC = () => {
               </p>
             )}
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Amount per Student
+            </label>
+            <Input
+              type="number"
+              placeholder="Enter your Target amount"
+              className="h-12"
+              {...register("amountPerStudent", { valueAsNumber: true })}
+            />
+            {error && (
+              <p className="text-xs sm:text-sm font-Supreme text-red-500 leading-tight sm:leading-normal mt-2">
+                {error.errors.targetAmount?.message}
+              </p>
+            )}
+          </div>
         </form>
       </div>
 

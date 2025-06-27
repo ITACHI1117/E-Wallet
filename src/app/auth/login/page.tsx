@@ -3,6 +3,7 @@ import ActivityIndicator from "@/components/ActivityIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLoginUser, useRegisterUser } from "@/queries/auth.queries";
+import { useUser } from "@/queries/user.queries";
 import { loginSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
@@ -57,7 +58,7 @@ const Login: React.FC = () => {
         draggable: true,
         progress: undefined,
       });
-      router.push("/wallet/home");
+      router.push("/check-role");
     }
     if (isError) {
       toast.error(`Error trying to login :${LoginError}`, {
