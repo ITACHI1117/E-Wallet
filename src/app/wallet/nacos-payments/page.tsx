@@ -136,8 +136,9 @@ const NacosPayments = () => {
   }, [refetch, isUserSuccess]);
 
   const handleSendPay = (id, createdBy, price) => {
+    const data = storeUser.state;
     router.push(
-      `send-money/${id}?createdBy=${createdBy}&price=${price}&userId=${userWalletId.walletId}`
+      `send-money/${id}?createdBy=${createdBy}&price=${price}&userId=${data.walletId}`
     );
   };
 
