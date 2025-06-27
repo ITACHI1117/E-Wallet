@@ -16,7 +16,7 @@ import { toast } from "react-toastify";
 import { storeSendFunds } from "@/store/storeSendFunds";
 
 // @ts-nocheck
-export default function SendMoney({ params }: { params: { id } }) {
+export default function SendMoney() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   const router = useRouter();
@@ -28,12 +28,6 @@ export default function SendMoney({ params }: { params: { id } }) {
     handleSubmit,
     formState: { errors },
   } = useForm({ resolver: zodResolver(payEventSchema) });
-
-  const searchParams = useSearchParams();
-  const price = searchParams.get("price");
-  const createdBy = searchParams.get("createdBy");
-  const userId = searchParams.get("userId");
-  const { id } = use(params);
 
   const SendFundsData = storeSendFunds.state;
 
