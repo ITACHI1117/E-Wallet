@@ -6,7 +6,7 @@ export default function Home() {
   const router = useRouter();
   useEffect(() => {
     setTimeout(() => {
-      router.push("/auth/login");
+      router.push("landing");
     }, 3000);
   }, []);
   return (
